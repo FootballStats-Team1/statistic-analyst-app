@@ -1,0 +1,74 @@
+<resources>
+
+    <!-- General -->
+    <string name="app_name" translatable="false">temp-project</string>
+    <string name="backButton">Back</string>
+
+    <string name="Userbtn">User</string>
+    <string name="StatisticAnalystbtn">Statistic Analyst</string>
+    <string name="SignInlbl">Sign In As:</string>
+    <string name="Helpbtn" translatable="false">\?</string>
+    <string name="Languagebtn" translatable="false">EN/GR</string>
+
+    <string name="lang_en" translatable="false">en</string>
+    <string name="lang_el" translatable="false">el</string>
+
+    <string name="help_title">Instructions</string>
+    <string name="help_message">Welcome to the Management System!\n\nPlease select your role to log in:\n\n• User (Fan): Monitor matches, live statistics, standings, and top 11 lineups.\n\n• Statistics Analyst: Manage match cards and record events (shots, passes, cards, etc.).</string>
+    <string name="help_understood">Understood</string>
+
+    <string name="menu_title">MAIN MENU</string>
+    <string name="menu_manage_match">Manage Match</string>
+    <string name="menu_standings">STANDINGS</string>
+    <string name="menu_matches">MATCHES</string>
+    <string name="menu_player_stats">PLAYER STATS</string>
+    <string name="menu_best_11">BEST 11</string>
+
+    <!-- Activity of Stats Analyst Confirmation -->
+    <string name="confirmText">Enter Analyst Key</string>
+    <string name="enterButton">Check Validation</string>
+    <string name="wrongPasswordTxt">Wrong Key. Contact EPO@gmail.com to get your key</string>
+
+    <!-- Matches Activity -->
+    <string name="team_name">TEAM</string>
+    <string name="mp">MP</string>
+    <string name="gd">GD</string>
+    <string name="pts">PTS</string>
+
+    <!-- Matches Activity -->
+    <string name="select_matchday">Matchday:</string>
+    <string name="matchday_prefix">Matchday</string>
+
+    <string name="teamStats">Team Stats</string>
+    <string name="personalStats">Personal Stats</string>
+
+    <!-- Status αγώνα  -->
+    <string name="status_finished">Final</string>
+    <string name="status_pending">Not started</string>
+
+    <!-- Labels στατιστικών ομάδας -->
+    <string name="stat_possession">Posession</string>
+    <string name="stat_shots">Total Shots</string>
+    <string name="stat_shots_on">On target</string>
+    <string name="stat_passes">Passes</string>
+    <string name="stat_pass_acc">Pass Accuracy</string>
+    <string name="stat_tackles">Tackles</string>
+    <string name="stat_corners">Corner</string>
+    <string name="stat_fouls">Foul</string>
+    <string name="stat_yellows">Yellow Cards</string>
+    <string name="stat_reds">Red cards</string>
+
+
+    <string name="starting">Starting</string>
+    <string name="substitutes">Substitutes</string>
+
+    <!-- Τίτλοι για τα headers των UIs -->
+    <string name="title_matches">Matches Schedule</string>
+    <string name="title_main">Home</string>
+    <string name="title_analyst_login">Analyst Login</string>
+    <string name="title_menu">Main Menu</string>
+    <string name="title_standings">Standings</string>
+    <string name="title_match_details">Match Details</string>
+
+
+</resources>
