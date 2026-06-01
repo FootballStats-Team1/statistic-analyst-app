@@ -38,9 +38,10 @@ public class StatsAnalystConfirmationActivity extends AppCompatActivity {
 
             if (enteredPassword.equals("14111926"))
             {
-                Intent intent = new Intent(this, AppMenuActivity.class);
-                intent.putExtra("IS_ANALYST", true);
+                // Instead of AppMenuActivity, go straight to ManageMatchActivity
+                Intent intent = new Intent(this, ManageMatchActivity.class);
                 startActivity(intent);
+                finish(); // Close the password screen so that the user cannot go back using the Back button
             }
             else
             {
