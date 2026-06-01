@@ -11,7 +11,7 @@ import android.widget.Toast;
 
 public class ManageMatchActivity extends AppCompatActivity {
 
-    // Δήλωση των στοιχείων της οθόνης
+    // Screen information
     Spinner matchSpinner;
     TextView homeTeamTxt, awayTeamTxt;
     EditText homeScoreInput, awayScoreInput;
@@ -21,12 +21,11 @@ public class ManageMatchActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // ΑΥΤΗ Η ΓΡΑΜΜΗ ΣΥΝΔΕΕΙ ΤΗ JAVA ΜΕ ΤΟ XML ΠΟΥ ΕΦΤΙΑΞΕΣ ΣΤΟ ΒΗΜΑ 1!
         setContentView(R.layout.activity_manage_match);
 
         setTitle("Διαχείριση Αγώνα (Analyst)");
 
-        // 1. Σύνδεση των μεταβλητών Java με τα ID του XML
+        // 1. Linking Java variables to XML IDs
         matchSpinner = findViewById(R.id.matchSpinner);
         homeTeamTxt = findViewById(R.id.homeTeamTxt);
         awayTeamTxt = findViewById(R.id.awayTeamTxt);
@@ -35,20 +34,20 @@ public class ManageMatchActivity extends AppCompatActivity {
         btnUpdateScore = findViewById(R.id.btnUpdateScore);
         btnFinishMatch = findViewById(R.id.btnFinishMatch);
 
-        // 2. Τι γίνεται όταν πατάμε το κουμπί "Ενημέρωση Σκορ"
+        // 2. What happens when we click the "Update Score" button?
         btnUpdateScore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Διαβάζουμε τι νούμερα έγραψε ο Αναλυτής
+                // Let's see what numbers the Analyst reported
                 String homeScore = homeScoreInput.getText().toString();
                 String awayScore = awayScoreInput.getText().toString();
 
-                // Προς το παρόν βγάζουμε ένα μήνυμα στην οθόνη
+                // For now, we're displaying a message on the screen
                 Toast.makeText(ManageMatchActivity.this, "Ενημέρωση: " + homeScore + "-" + awayScore + " (LIVE)", Toast.LENGTH_SHORT).show();
             }
         });
 
-        // 3. Τι γίνεται όταν πατάμε το κουμπί "Λήξη Αγώνα"
+        // 3. What happens when we press the "End Match" button?
         btnFinishMatch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
