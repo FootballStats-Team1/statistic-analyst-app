@@ -6,12 +6,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class ManageMatchActivity extends AppCompatActivity {
 
     Spinner matchSpinner, spinnerPlayerOut, spinnerPlayerIn;
-    EditText homeScoreInput, awayScoreInput;
+    TextView homeScoreInput, awayScoreInput;
     Button btnUpdateScore, btnFinishMatch, btnSubstitute;
 
     @Override
@@ -33,7 +34,7 @@ public class ManageMatchActivity extends AppCompatActivity {
 
         // 2. Enabling Statistics Counters (Buttons)
         // Home Team
-        setupCounter(R.id.btnHomeGoal);
+        setupGoalCounter(R.id.btnHomeGoal, homeScoreInput);
         setupCounter(R.id.btnHomeShotOn);
         setupCounter(R.id.btnHomeShotOff);
         setupCounter(R.id.btnHomePassSucc);
@@ -47,7 +48,7 @@ public class ManageMatchActivity extends AppCompatActivity {
         setupCounter(R.id.btnHomeRed);
 
         // Away
-        setupCounter(R.id.btnAwayGoal);
+        setupGoalCounter(R.id.btnAwayGoal, awayScoreInput);
         setupCounter(R.id.btnAwayShotOn);
         setupCounter(R.id.btnAwayShotOff);
         setupCounter(R.id.btnAwayPassSucc);
@@ -85,17 +86,62 @@ public class ManageMatchActivity extends AppCompatActivity {
         });
     }
 
-    // Takes a button, initializes it to "0", and tells it to increment by 1 with every click
+    // +1 with a click, -1 with a long click
     private void setupCounter(int buttonId) {
         Button btn = findViewById(buttonId);
-        btn.setText("0"); // Αρχική τιμή
+        btn.setText("0");
 
+        // Single tap -> Add
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // It reads the current number, adds 1 to it, and writes it back
                 int currentValue = Integer.parseInt(btn.getText().toString());
                 btn.setText(String.valueOf(currentValue + 1));
+            }
+        });
+
+        // Long press -> Subtraction
+        btn.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                int currentValue = Integer.parseInt(btn.getText().toString());
+                if (currentValue > 0) { // To prevent negative numbers (-1)
+                    btn.setText(String.valueOf(currentValue - 1));
+                }
+                return true; // Indicates that the action was completed
+            }
+        });
+    }
+
+    // +1/-1 and in the main score
+    private void setupGoalCounter(int buttonId, TextView scoreInput) {
+        Button btn = findViewById(buttonId);
+        btn.setText("0");
+
+        // Single tap -> Add Goal and Score
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int currentStat = Integer.parseInt(btn.getText().toString());
+                btn.setText(String.valueOf(currentStat + 1));
+
+                int currentScore = Integer.parseInt(scoreInput.getText().toString());
+                scoreInput.setText(String.valueOf(currentScore + 1));
+            }
+        });
+
+        // Long press -> Subtract Goals and Score
+        btn.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                int currentStat = Integer.parseInt(btn.getText().toString());
+                int currentScore = Integer.parseInt(scoreInput.getText().toString());
+
+                if (currentStat > 0 && currentScore > 0) {
+                    btn.setText(String.valueOf(currentStat - 1));
+                    scoreInput.setText(String.valueOf(currentScore - 1));
+                }
+                return true;
             }
         });
     }
