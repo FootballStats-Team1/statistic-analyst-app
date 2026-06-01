@@ -32,6 +32,11 @@ public class ManageMatchActivity extends AppCompatActivity {
         spinnerPlayerIn = findViewById(R.id.spinnerPlayerIn);
         btnSubstitute = findViewById(R.id.btnSubstitute);
 
+
+        // Populating the Match Menu
+        setupMatchSpinner();
+
+
         // 2. Enabling Statistics Counters (Buttons)
         // Home Team
         setupGoalCounter(R.id.btnHomeGoal, homeScoreInput);
@@ -85,6 +90,7 @@ public class ManageMatchActivity extends AppCompatActivity {
             }
         });
     }
+
 
     // +1 with a click, -1 with a long click
     private void setupCounter(int buttonId) {
@@ -142,6 +148,40 @@ public class ManageMatchActivity extends AppCompatActivity {
                     scoreInput.setText(String.valueOf(currentScore - 1));
                 }
                 return true;
+            }
+        });
+    }
+
+    // --- METHOD FOR THE MATCH SPINNER ---
+    private void setupMatchSpinner() {
+        // List of mock matches (Mock Data) until the API is ready
+        String[] dummyMatches = {
+                "--- Select Match ---",
+                "121: Olympiacos - PAOK (PENDING)",
+                "122: AEK - Panathinaikos (LIVE)",
+                "123: Aris - OFI (LIVE)"
+        };
+
+        // The Adapter is responsible for populating the Spinner with the Strings
+        android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_dropdown_item,
+                dummyMatches
+        );
+        matchSpinner.setAdapter(adapter);
+
+        // What happens when the user selects a match?
+        matchSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {
+                // If they didn't select "--- Select Match ---" (which is at position 0)
+                if (position > 0) {
+                    Toast.makeText(ManageMatchActivity.this, "Loading: " + dummyMatches[position], Toast.LENGTH_SHORT).show();
+                    // TODO: In the future, we will reset the statistics here or load the existing ones from the database.
+                }
+            }
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {
             }
         });
     }
