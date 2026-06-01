@@ -185,4 +185,43 @@ public class ManageMatchActivity extends AppCompatActivity {
             }
         });
     }
+
+    // SENDING DATA TO THE BACKEND (API CALL)
+    private void sendEventToServer(String eventType, String teamType, String value) {
+        // Get the selected match (for now, we're using a dummy ID, e.g., 121)
+        String matchId = "121";
+
+        // The PHP URL that the team will create
+        String url = Config.BASE_URL + "insertMatchEvent.php";
+
+        // We build the "package" with the data we will send (POST request)
+        okhttp3.RequestBody formBody = new okhttp3.FormBody.Builder()
+                .add("match_id", matchId)
+                .add("team_type", teamType) // "home" or "away"
+                .add("event_type", eventType) // e.g., "shot_on", "yellow_card"
+                .add("value", value) // "+1" or "-1" (if a mistake was made)
+                .build();
+
+        okhttp3.Request request = new okhttp3.Request.Builder()
+                .url (url)
+                .post(formBody)
+                .build();
+
+        okhttp3.OkHttpClient client = new okhttp3.OkHttpClient();
+
+        // Execute the call in the background so the app doesn't freeze
+        client.newCall(request).enqueue(new okhttp3.Callback() {
+            @Override
+            public void onFailure(okhttp3.Call call, java.io.IOException e) {
+                e.printStackTrace();
+            }
+            @Override
+            public void onResponse(okhttp3.Call call, okhttp3.Response response) throws java.io.IOException {
+                if (response.isSuccessful()) {
+                    // Successful write to the backend!
+                    System.out.println("Success: The event was sent!");
+                }
+            }
+        });
+    }
 }
