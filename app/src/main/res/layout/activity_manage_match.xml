@@ -128,10 +128,43 @@
             android:textStyle="bold"
             android:layout_marginBottom="16dp"/>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginEnd="4dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Παίκτης Γηπεδούχου" android:textColor="@color/white" android:textSize="12sp"/>
+                <Spinner android:id="@+id/spinnerHomePlayer" android:layout_width="match_parent" android:layout_height="40dp" android:background="@color/white"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="4dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Παίκτης Φιλοξενούμενης" android:textColor="@color/white" android:textSize="12sp"/>
+                <Spinner android:id="@+id/spinnerAwayPlayer" android:layout_width="match_parent" android:layout_height="40dp" android:background="@color/white"/>
+            </LinearLayout>
+        </LinearLayout>
+
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:layout_marginBottom="8dp">
             <Button android:id="@+id/btnHomeGoal" android:layout_width="60dp" android:layout_height="wrap_content" android:text="+1" android:backgroundTint="@color/palette_blue_1"/>
             <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="ΓΚΟΛ" android:textColor="@color/white" android:gravity="center" android:textStyle="bold"/>
             <Button android:id="@+id/btnAwayGoal" android:layout_width="60dp" android:layout_height="wrap_content" android:text="+1" android:backgroundTint="@color/palette_blue_1"/>
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:layout_marginBottom="8dp">
+            <Button android:id="@+id/btnHomeAssist" android:layout_width="60dp" android:layout_height="wrap_content" android:text="+1" android:backgroundTint="@color/palette_blue_4"/>
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="ΑΣΙΣΤ" android:textColor="@color/white" android:gravity="center" android:textStyle="bold"/>
+            <Button android:id="@+id/btnAwayAssist" android:layout_width="60dp" android:layout_height="wrap_content" android:text="+1" android:backgroundTint="@color/palette_blue_4"/>
         </LinearLayout>
 
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:layout_marginBottom="8dp">
@@ -154,8 +187,14 @@
 
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:layout_marginBottom="8dp">
             <Button android:id="@+id/btnHomePassFail" android:layout_width="60dp" android:layout_height="wrap_content" android:text="+1" android:backgroundTint="#8B0000"/>
-            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="ΛΑΘΟΣ / ΚΑΚΗ ΠΑΣΑ" android:textColor="@color/white" android:gravity="center" android:textStyle="bold"/>
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="ΚΑΚΗ ΠΑΣΑ" android:textColor="@color/white" android:gravity="center" android:textStyle="bold"/>
             <Button android:id="@+id/btnAwayPassFail" android:layout_width="60dp" android:layout_height="wrap_content" android:text="+1" android:backgroundTint="#8B0000"/>
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:layout_marginBottom="8dp">
+            <Button android:id="@+id/btnHomeError" android:layout_width="60dp" android:layout_height="wrap_content" android:text="+1" android:backgroundTint="#8B0000"/>
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="ΛΑΘΟΣ" android:textColor="@color/white" android:gravity="center" android:textStyle="bold"/>
+            <Button android:id="@+id/btnAwayError" android:layout_width="60dp" android:layout_height="wrap_content" android:text="+1" android:backgroundTint="#8B0000"/>
         </LinearLayout>
 
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:layout_marginBottom="8dp">
@@ -165,15 +204,27 @@
         </LinearLayout>
 
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:layout_marginBottom="8dp">
+            <Button android:id="@+id/btnHomeTackleFail" android:layout_width="60dp" android:layout_height="wrap_content" android:text="+1" android:backgroundTint="#8B0000"/>
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="ΤΑΚΛΙΝ (ΧΑΜΕΝΟ)" android:textColor="@color/white" android:gravity="center" android:textStyle="bold"/>
+            <Button android:id="@+id/btnAwayTackleFail" android:layout_width="60dp" android:layout_height="wrap_content" android:text="+1" android:backgroundTint="#8B0000"/>
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:layout_marginBottom="8dp">
             <Button android:id="@+id/btnHomeCross" android:layout_width="60dp" android:layout_height="wrap_content" android:text="+1" android:backgroundTint="@color/palette_blue_4"/>
-            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="ΣΕΝΤΡΑ" android:textColor="@color/white" android:gravity="center" android:textStyle="bold"/>
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="ΣΕΝΤΡΑ (ΕΠΙΤΥΧΗΣ)" android:textColor="@color/white" android:gravity="center" android:textStyle="bold"/>
             <Button android:id="@+id/btnAwayCross" android:layout_width="60dp" android:layout_height="wrap_content" android:text="+1" android:backgroundTint="@color/palette_blue_4"/>
         </LinearLayout>
 
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:layout_marginBottom="8dp">
-            <Button android:id="@+id/btnHomeAssist" android:layout_width="60dp" android:layout_height="wrap_content" android:text="+1" android:backgroundTint="@color/palette_blue_4"/>
-            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="ΑΣΙΣΤ" android:textColor="@color/white" android:gravity="center" android:textStyle="bold"/>
-            <Button android:id="@+id/btnAwayAssist" android:layout_width="60dp" android:layout_height="wrap_content" android:text="+1" android:backgroundTint="@color/palette_blue_4"/>
+            <Button android:id="@+id/btnHomeCrossFail" android:layout_width="60dp" android:layout_height="wrap_content" android:text="+1" android:backgroundTint="#8B0000"/>
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="ΣΕΝΤΡΑ (ΧΑΜΕΝΗ)" android:textColor="@color/white" android:gravity="center" android:textStyle="bold"/>
+            <Button android:id="@+id/btnAwayCrossFail" android:layout_width="60dp" android:layout_height="wrap_content" android:text="+1" android:backgroundTint="#8B0000"/>
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:layout_marginBottom="8dp">
+            <Button android:id="@+id/btnHomeFoulWon" android:layout_width="60dp" android:layout_height="wrap_content" android:text="+1" android:backgroundTint="@color/palette_blue_4"/>
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="ΦΑΟΥΛ ΥΠΕΡ" android:textColor="@color/white" android:gravity="center" android:textStyle="bold"/>
+            <Button android:id="@+id/btnAwayFoulWon" android:layout_width="60dp" android:layout_height="wrap_content" android:text="+1" android:backgroundTint="@color/palette_blue_4"/>
         </LinearLayout>
 
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:layout_marginBottom="8dp">

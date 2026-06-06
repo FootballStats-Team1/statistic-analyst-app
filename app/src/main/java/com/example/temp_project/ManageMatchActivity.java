@@ -11,7 +11,7 @@ import android.widget.Toast;
 
 public class ManageMatchActivity extends AppCompatActivity {
 
-    Spinner matchSpinner, spinnerPlayerOut, spinnerPlayerIn;
+    Spinner matchSpinner, spinnerPlayerOut, spinnerPlayerIn, spinnerHomePlayer, spinnerAwayPlayer;
     TextView homeScoreInput, awayScoreInput;
     Button btnUpdateScore, btnFinishMatch, btnSubstitute;
 
@@ -22,6 +22,11 @@ public class ManageMatchActivity extends AppCompatActivity {
     private java.util.ArrayList<String> playerList = new java.util.ArrayList<>();
     private android.widget.ArrayAdapter<String> matchAdapter;
     private android.widget.ArrayAdapter<String> playerAdapter;
+
+    private java.util.ArrayList<String> homePlayerList = new java.util.ArrayList<>();
+    private java.util.ArrayList<String> awayPlayerList = new java.util.ArrayList<>();
+    private android.widget.ArrayAdapter<String> homePlayerAdapter;
+    private android.widget.ArrayAdapter<String> awayPlayerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +45,14 @@ public class ManageMatchActivity extends AppCompatActivity {
         spinnerPlayerIn = findViewById(R.id.spinnerPlayerIn);
         btnSubstitute = findViewById(R.id.btnSubstitute);
 
+        spinnerHomePlayer = findViewById(R.id.spinnerHomePlayer);
+        spinnerAwayPlayer = findViewById(R.id.spinnerAwayPlayer);
+
+        homePlayerAdapter = new android.widget.ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, homePlayerList);
+        spinnerHomePlayer.setAdapter(homePlayerAdapter);
+
+        awayPlayerAdapter = new android.widget.ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, awayPlayerList);
+        spinnerAwayPlayer.setAdapter(awayPlayerAdapter);
 
         // Network initialization & adapters
         client = new okhttp3.OkHttpClient();
@@ -83,6 +96,11 @@ public class ManageMatchActivity extends AppCompatActivity {
         setupCounter(R.id.btnHomeCorner, "home", "corners_won");
         setupCounter(R.id.btnHomeYellow, "home", "yellow_cards");
         setupCounter(R.id.btnHomeRed, "home", "red_cards");
+        setupCounter(R.id.btnHomeTackleFail, "home", "tackles_fail");
+        setupCounter(R.id.btnHomeCrossFail, "home", "crosses_fail");
+        setupCounter(R.id.btnHomeError, "home", "errors");
+        setupCounter(R.id.btnHomeFoulWon, "home", "fouls_won");
+
 
         // Away
         setupGoalCounter(R.id.btnAwayGoal, awayScoreInput, "away", "goals");
@@ -97,6 +115,11 @@ public class ManageMatchActivity extends AppCompatActivity {
         setupCounter(R.id.btnAwayCorner, "away", "corners_won");
         setupCounter(R.id.btnAwayYellow, "away", "yellow_cards");
         setupCounter(R.id.btnAwayRed, "away", "red_cards");
+        setupCounter(R.id.btnAwayTackleFail, "away", "tackles_fail");
+        setupCounter(R.id.btnAwayCrossFail, "away", "crosses_fail");
+        setupCounter(R.id.btnAwayError, "away", "errors");
+        setupCounter(R.id.btnAwayFoulWon, "away", "fouls_won");
+
 
         // 3. Function of the Score and Change Buttons
         btnUpdateScore.setOnClickListener(new View.OnClickListener() {
@@ -140,28 +163,34 @@ public class ManageMatchActivity extends AppCompatActivity {
         Button btn = findViewById(buttonId);
         btn.setText("0");
 
-        // Single click -> Add (+1)
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String playerId = getSelectedPlayerId(teamType);
+                if (playerId == null) {
+                    Toast.makeText(ManageMatchActivity.this, "Επιλέξτε παίκτη πρώτα!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 int currentValue = Integer.parseInt(btn.getText().toString());
                 btn.setText(String.valueOf(currentValue + 1));
-
-                // SEND THE DATA TO PHP
-                sendEventToServer(eventType, teamType, "+1");
+                sendEventToServer(eventType, teamType, "+1", playerId);
             }
         });
 
-        // Long press -> Subtract (-1)
         btn.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
+                String playerId = getSelectedPlayerId(teamType);
+                if (playerId == null) {
+                    Toast.makeText(ManageMatchActivity.this, "Επιλέξτε παίκτη πρώτα!", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+
                 int currentValue = Integer.parseInt(btn.getText().toString());
                 if (currentValue > 0) {
                     btn.setText(String.valueOf(currentValue - 1));
-
-                    // SEND THE SUBTRACTION TO PHP
-                    sendEventToServer(eventType, teamType, "-1");
+                    sendEventToServer(eventType, teamType, "-1", playerId);
                 }
                 return true;
             }
@@ -176,29 +205,36 @@ public class ManageMatchActivity extends AppCompatActivity {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String playerId = getSelectedPlayerId(teamType);
+                if (playerId == null) {
+                    Toast.makeText(ManageMatchActivity.this, "Επιλέξτε παίκτη πρώτα!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 int currentStat = Integer.parseInt(btn.getText().toString());
                 btn.setText(String.valueOf(currentStat + 1));
-
                 int currentScore = Integer.parseInt(scoreInput.getText().toString());
                 scoreInput.setText(String.valueOf(currentScore + 1));
 
-                // SEND GOAL TO BACKEND
-                sendEventToServer(eventType, teamType, "+1");
+                sendEventToServer(eventType, teamType, "+1", playerId);
             }
         });
 
         btn.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
+                String playerId = getSelectedPlayerId(teamType);
+                if (playerId == null) {
+                    Toast.makeText(ManageMatchActivity.this, "Επιλέξτε παίκτη πρώτα!", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+
                 int currentStat = Integer.parseInt(btn.getText().toString());
                 int currentScore = Integer.parseInt(scoreInput.getText().toString());
-
                 if (currentStat > 0 && currentScore > 0) {
                     btn.setText(String.valueOf(currentStat - 1));
                     scoreInput.setText(String.valueOf(currentScore - 1));
-
-                    // SUBTRACT GOAL FROM THE BACKEND
-                    sendEventToServer(eventType, teamType, "-1");
+                    sendEventToServer(eventType, teamType, "-1", playerId);
                 }
                 return true;
             }
@@ -207,13 +243,13 @@ public class ManageMatchActivity extends AppCompatActivity {
 
 
     // SENDING DATA TO THE BACKEND (API CALL)
-    private void sendEventToServer(String eventType, String teamType, String value) {
-        if (selectedMatchId.isEmpty()) return; // If no match has been selected, do nothing
+    private void sendEventToServer(String eventType, String teamType, String value, String playerId) {
+        if (selectedMatchId.isEmpty()) return;
 
         String url = Config.BASE_URL + "insertMatchEvent.php";
-
         okhttp3.RequestBody formBody = new okhttp3.FormBody.Builder()
                 .add("match_id", selectedMatchId)
+                .add("player_id", playerId)  // <--- ΝΕΟ ΠΕΔΙΟ ΓΙΑ ΤΗ ΒΑΣΗ ΔΕΔΟΜΕΝΩΝ!
                 .add("team_type", teamType)
                 .add("event_type", eventType)
                 .add("value", value)
@@ -228,7 +264,7 @@ public class ManageMatchActivity extends AppCompatActivity {
             }
             @Override
             public void onResponse(okhttp3.Call call, okhttp3.Response response) throws java.io.IOException {
-                // Success!
+                // Επιτυχής καταγραφή!
             }
         });
     }
@@ -262,7 +298,7 @@ public class ManageMatchActivity extends AppCompatActivity {
     }
 
     private void fetchPlayers(String matchId) {
-        String url = Config.BASE_URL + "getMatchLineups.php?matchId=" + matchId;
+        String url = Config.BASE_URL + "getPlayersForAnalyst.php?matchId=" + matchId;
         okhttp3.Request request = new okhttp3.Request.Builder().url(url).build();
 
         client.newCall(request).enqueue(new okhttp3.Callback() {
@@ -274,27 +310,47 @@ public class ManageMatchActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     String responseData = response.body().string();
                     try {
-                        // Reading the JSON object as returned by getMatchLineups.php
                         org.json.JSONObject obj = new org.json.JSONObject(responseData);
-                        org.json.JSONArray hs = obj.getJSONArray("home_starters");
-                        org.json.JSONArray as = obj.getJSONArray("away_starters");
-                        org.json.JSONArray hsub = obj.getJSONArray("home_subs");
-                        org.json.JSONArray asub = obj.getJSONArray("away_subs");
 
+                        // ΣΩΣΤΗ ΑΝΑΓΝΩΣΗ: Διαβάζουμε τα JSON Arrays όπως τα στέλνει το νέο PHP
+                        org.json.JSONArray hp = obj.getJSONArray("home_players");
+                        org.json.JSONArray ap = obj.getJSONArray("away_players");
+
+                        // 1. Γεμίζουμε το Spinner των Γηπεδούχων
+                        homePlayerList.clear();
+                        homePlayerList.add("--- Επιλέξτε Παίκτη ---");
+                        for (int i=0; i<hp.length(); i++) homePlayerList.add(hp.getString(i));
+
+                        // 2. Γεμίζουμε το Spinner των Φιλοξενούμενων
+                        awayPlayerList.clear();
+                        awayPlayerList.add("--- Επιλέξτε Παίκτη ---");
+                        for (int i=0; i<ap.length(); i++) awayPlayerList.add(ap.getString(i));
+
+                        // 3. Γεμίζουμε και την παλιά γενική λίστα (για να δουλεύουν σωστά οι Αλλαγές!)
                         playerList.clear();
-                        playerList.add("--- Επιλέξτε Παίκτη ---");
+                        for (int i=0; i<hp.length(); i++) playerList.add(hp.getString(i));
+                        for (int i=0; i<ap.length(); i++) playerList.add(ap.getString(i));
 
-                        // Add all the players to the Spinner
-                        for (int i=0; i<hs.length(); i++) playerList.add(hs.getString(i));
-                        for (int i=0; i<as.length(); i++) playerList.add(as.getString(i));
-                        for (int i=0; i<hsub.length(); i++) playerList.add(hsub.getString(i));
-                        for (int i=0; i<asub.length(); i++) playerList.add(asub.getString(i));
-
-                        runOnUiThread(() -> playerAdapter.notifyDataSetChanged());
+                        runOnUiThread(() -> {
+                            homePlayerAdapter.notifyDataSetChanged();
+                            awayPlayerAdapter.notifyDataSetChanged();
+                            playerAdapter.notifyDataSetChanged();
+                        });
                     } catch (Exception e) { e.printStackTrace(); }
                 }
             }
         });
+    }
+
+    private String getSelectedPlayerId(String teamType) {
+        Spinner targetSpinner = teamType.equals("home") ? spinnerHomePlayer : spinnerAwayPlayer;
+        if (targetSpinner.getSelectedItem() != null) {
+            String selection = targetSpinner.getSelectedItem().toString();
+            if (!selection.startsWith("---")) {
+                return selection.split(":")[0].trim();
+            }
+        }
+        return null;
     }
 
     private void sendSubstitutionToServer(String playerOutStr, String playerInStr) {
