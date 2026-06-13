@@ -3,6 +3,7 @@ package com.example.temp_project;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -31,7 +32,6 @@ public class ChooseMatchActivity extends AppCompatActivity {
         spinnerMatchday = findViewById(R.id.spinnerMatchday);
         matchesContainer = findViewById(R.id.matchesContainer);
 
-        // Γέμισμα του Spinner
         populateSpinner();
     }
 
@@ -39,7 +39,6 @@ public class ChooseMatchActivity extends AppCompatActivity {
         ArrayList<String> matchdays = new ArrayList<>();
         String prefix = getString(R.string.matchday_prefix);
 
-        // Βάζουμε HARDCODED τον αριθμό των αγωνιστικών (9)
         for (int i = 1; i <= 9; i++) {
             matchdays.add(prefix + " " + i);
         }
@@ -50,7 +49,6 @@ public class ChooseMatchActivity extends AppCompatActivity {
                 View view = super.getDropDownView(position, convertView, parent);
                 TextView tv = (TextView) view;
 
-                // HARDCODED, ξέρουμε ότι η 4η αγωνιστική (index 3) είναι η live!
                 if (position == 3) {
                     tv.setTextColor(android.graphics.Color.RED);
                     tv.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -64,13 +62,11 @@ public class ChooseMatchActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerMatchday.setAdapter(adapter);
 
-        // Τι γίνεται όταν ο χρήστης διαλέγει αγωνιστική (using onItemSelected interface)
         spinnerMatchday.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                int selectedMatchday = position + 1; // Το index 0 είναι η 1η αγωνιστική
+                int selectedMatchday = position + 1;
 
-                // Καλούμε τη μέθοδο και μαθαίνουμε αν η αγωνιστική που επιλέχθηκε είναι Live
                 boolean isLive = loadMatchesForRound(selectedMatchday);
                 if (view instanceof TextView) {
                     TextView spinnerTextView = (TextView) view;
@@ -90,22 +86,17 @@ public class ChooseMatchActivity extends AppCompatActivity {
     }
 
     private boolean loadMatchesForRound(int matchday) {
-        // Καθαρίζουμε την οθόνη από τους αγώνες της προηγούμενης επιλογής
         matchesContainer.removeAllViews();
 
-        // Καλούμε την υπηρεσία - ΠΡΟΣΟΧΗ η υπηρεσία 'getMatches.php' παίρνει ως GET attribute την αγωνιστική! (π.χ. 'getMatches.php?matchday=3')
         MatchesList listManager = new MatchesList(matchday);
         ArrayList<Match> matches = listManager.getMatches();
 
-        boolean isRoundLive = false; // Μεταβλητή για το αν η αγωνιστική έχει LIVE αγώνα
+        boolean isRoundLive = false;
 
-        // Σχεδιάζουμε τον κάθε αγώνα
         for (Match match : matches) {
 
-            // Inflate το XML του αγώνα που φτιάξαμε
             View matchRow = getLayoutInflater().inflate(R.layout.item_match, matchesContainer, false);
 
-            // Βρίσκουμε τα στοιχεία ΜΕΣΑ σε αυτή τη γραμμή
             TextView tvHome = matchRow.findViewById(R.id.tvHomeTeam);
             TextView tvAway = matchRow.findViewById(R.id.tvAwayTeam);
             TextView tvScore = matchRow.findViewById(R.id.tvScore);
@@ -114,32 +105,74 @@ public class ChooseMatchActivity extends AppCompatActivity {
 
             tvHome.setText(match.getHomeTeam());
             tvAway.setText(match.getAwayTeam());
-            // Έλεγχος αν ο αγώνας είναι Live
+
             if ("live".equalsIgnoreCase(match.getStatus())) {
-                isRoundLive = true; // Βρήκαμε live αγώνα, άρα όλη η αγωνιστική είναι live!
-                tvScore.setTextColor(android.graphics.Color.RED); // Το κάνουμε κόκκινο
-                tvScore.setText("LIVE\n" + match.getScoreText()); // Γράφουμε "LIVE" και από κάτω το σκορ
+                isRoundLive = true;
+                tvScore.setTextColor(android.graphics.Color.RED);
+                tvScore.setText("LIVE\n" + match.getScoreText());
             } else {
                 tvScore.setText(match.getScoreText());
             }
+
+
+            if ("finished".equalsIgnoreCase(match.getStatus()))
+            {
+                matchRow.setEnabled(false);
+                matchRow.setClickable(false);
+                matchRow.setBackgroundResource(R.color.divider_gray);
+            }
+
+
+
             Picasso.with(getApplicationContext()).load(match.getHomeLogo()).error(R.mipmap.ic_launcher_round).into(imgHome);
             Picasso.with(getApplicationContext()).load(match.getAwayLogo()).error(R.mipmap.ic_launcher_round).into(imgAway);
 
-            // Τι γίνεται όταν πατάει πάνω σε έναν αγώνα
             matchRow.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(ChooseMatchActivity.this, ChooseLineupsActivity.class);
-                    intent.putExtra("MATCH_ID", match.getMatchId());
+                    int mId = match.getMatchId();
+                    boolean hasLineup = matchHasLineup(mId);
+
+                    Intent intent;
+                    if (hasLineup) {
+                        intent = new Intent(ChooseMatchActivity.this, ManageMatchActivity.class);
+                    } else {
+                        intent = new Intent(ChooseMatchActivity.this, ChooseLineupsActivity.class);
+                    }
+                    intent.putExtra("MATCH_ID", mId);
                     startActivity(intent);
                 }
             });
 
-            // Προσθέτουμε το row στο κεντρικό UI
             matchesContainer.addView(matchRow);
         }
 
-        // Επιστρέφουμε το αποτέλεσμα αν η αγωνιστική είναι live ή όχι
         return isRoundLive;
+    }
+
+    private boolean matchHasLineup(int matchId) {
+        final boolean[] result = {false};
+
+        Thread t = new Thread(() -> {
+            try {
+                okhttp3.OkHttpClient client = new okhttp3.OkHttpClient();
+                String url = Config.BASE_URL + "checkLineup.php?matchId=" + matchId;
+                okhttp3.Request req = new okhttp3.Request.Builder().url(url).build();
+                okhttp3.Response resp = client.newCall(req).execute();
+                if (resp.body() != null) {
+                    org.json.JSONObject obj = new org.json.JSONObject(resp.body().string());
+                    result[0] = obj.optBoolean("has_lineup", false);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        t.start();
+        try {
+            t.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return result[0];
     }
 }

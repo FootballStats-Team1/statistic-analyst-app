@@ -4,23 +4,27 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.squareup.picasso.Picasso;
+
 public class ManageMatchActivity extends AppCompatActivity {
 
-    Spinner matchSpinner, spinnerPlayerOut, spinnerPlayerIn, spinnerHomePlayer, spinnerAwayPlayer;
-    TextView homeScoreInput, awayScoreInput;
+    Spinner spinnerPlayerOut, spinnerPlayerIn, spinnerHomePlayer, spinnerAwayPlayer;
+    TextView homeScoreInput, awayScoreInput, homeTeamTxt, awayTeamTxt;
+    ImageView imgHomeLogo, imgAwayLogo;
     Button btnUpdateScore, btnFinishMatch, btnSubstitute;
 
     private okhttp3.OkHttpClient client;
+
+    // Ο αγώνας έρχεται έτοιμος από την προηγούμενη οθόνη (δεν επιλέγουμε πλέον)
+    private int matchId = -1;
     private String selectedMatchId = "";
 
-    private java.util.ArrayList<String> matchList = new java.util.ArrayList<>();
     private java.util.ArrayList<String> playerList = new java.util.ArrayList<>();
-    private android.widget.ArrayAdapter<String> matchAdapter;
     private android.widget.ArrayAdapter<String> playerAdapter;
 
     private java.util.ArrayList<String> homePlayerList = new java.util.ArrayList<>();
@@ -34,8 +38,15 @@ public class ManageMatchActivity extends AppCompatActivity {
         setContentView(R.layout.activity_manage_match);
         setTitle("Διαχείριση Αγώνα (Analyst)");
 
-        // 1. Connecting the basic UI elements
-        matchSpinner = findViewById(R.id.matchSpinner);
+        // Ο αγώνας που μας έστειλε το ChooseLineupsActivity
+        matchId = getIntent().getIntExtra("MATCH_ID", -1);
+        selectedMatchId = (matchId > 0) ? String.valueOf(matchId) : "";
+
+        // 1. UI elements (header logos + score αντί για spinner αγώνα)
+        imgHomeLogo = findViewById(R.id.imgHomeLogo);
+        imgAwayLogo = findViewById(R.id.imgAwayLogo);
+        homeTeamTxt = findViewById(R.id.homeTeamTxt);
+        awayTeamTxt = findViewById(R.id.awayTeamTxt);
         homeScoreInput = findViewById(R.id.homeScoreInput);
         awayScoreInput = findViewById(R.id.awayScoreInput);
         btnUpdateScore = findViewById(R.id.btnUpdateScore);
@@ -54,33 +65,18 @@ public class ManageMatchActivity extends AppCompatActivity {
         awayPlayerAdapter = new android.widget.ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, awayPlayerList);
         spinnerAwayPlayer.setAdapter(awayPlayerAdapter);
 
-        // Network initialization & adapters
+        // Network init & adapters
         client = new okhttp3.OkHttpClient();
-
-        matchAdapter = new android.widget.ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, matchList);
-        matchSpinner.setAdapter(matchAdapter);
 
         playerAdapter = new android.widget.ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, playerList);
         spinnerPlayerOut.setAdapter(playerAdapter);
         spinnerPlayerIn.setAdapter(playerAdapter);
 
-        // Retrieve matches from PHP
-        fetchMatches();
-
-        // What happens when a match is selected
-        matchSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
-                if (position > 0) {
-                    String selection = matchList.get(position);
-                    selectedMatchId = selection.split(":")[0].trim();
-                    fetchPlayers(selectedMatchId); // Retrieves the players for this match
-                }
-            }
-            @Override
-            public void onNothingSelected(android.widget.AdapterView<?> parent) {}
-        });
-
+        // Φορτώνουμε header (logos, ονόματα, σκορ) + παίκτες απευθείας για τον γνωστό αγώνα
+        fetchMatchHeader();
+        if (!selectedMatchId.isEmpty()) {
+            fetchPlayers(selectedMatchId);
+        }
 
         // 2. Enabling Statistics Counters (Buttons)
         // Home Team
@@ -101,7 +97,6 @@ public class ManageMatchActivity extends AppCompatActivity {
         setupCounter(R.id.btnHomeError, "home", "errors");
         setupCounter(R.id.btnHomeFoulWon, "home", "fouls_won");
 
-
         // Away
         setupGoalCounter(R.id.btnAwayGoal, awayScoreInput, "away", "goals");
         setupCounter(R.id.btnAwayShotOn, "away", "shots_on_target");
@@ -120,8 +115,7 @@ public class ManageMatchActivity extends AppCompatActivity {
         setupCounter(R.id.btnAwayError, "away", "errors");
         setupCounter(R.id.btnAwayFoulWon, "away", "fouls_won");
 
-
-        // 3. Function of the Score and Change Buttons
+        // 3. Score & Substitution buttons
         btnUpdateScore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -141,11 +135,11 @@ public class ManageMatchActivity extends AppCompatActivity {
         btnSubstitute.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(selectedMatchId.isEmpty()) {
-                    Toast.makeText(ManageMatchActivity.this, "Επιλέξτε αγώνα!", Toast.LENGTH_SHORT).show();
+                if (selectedMatchId.isEmpty()) {
+                    Toast.makeText(ManageMatchActivity.this, "Δεν υπάρχει αγώνας!", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                if(spinnerPlayerOut.getSelectedItem() == null || spinnerPlayerIn.getSelectedItem() == null) {
+                if (spinnerPlayerOut.getSelectedItem() == null || spinnerPlayerIn.getSelectedItem() == null) {
                     Toast.makeText(ManageMatchActivity.this, "Δεν υπάρχουν παίκτες!", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -157,6 +151,55 @@ public class ManageMatchActivity extends AppCompatActivity {
         });
     }
 
+    // Header: logos + ονόματα + σκορ από το getMatchDetails.php
+    private void fetchMatchHeader() {
+        if (selectedMatchId.isEmpty()) return;
+
+        String url = Config.BASE_URL + "getMatchDetails.php?matchId=" + selectedMatchId;
+        okhttp3.Request request = new okhttp3.Request.Builder().url(url).build();
+
+        client.newCall(request).enqueue(new okhttp3.Callback() {
+            @Override
+            public void onFailure(okhttp3.Call call, java.io.IOException e) {}
+
+            @Override
+            public void onResponse(okhttp3.Call call, okhttp3.Response response) throws java.io.IOException {
+                if (response.isSuccessful()) {
+                    String data = response.body().string();
+                    try {
+                        org.json.JSONObject obj = new org.json.JSONObject(data);
+
+                        final String homeTeam = obj.getString("home_team");
+                        final String awayTeam = obj.getString("away_team");
+                        final String homeLogo = obj.getString("home_logo").trim();
+                        final String awayLogo = obj.getString("away_logo").trim();
+
+                        int hs = obj.getInt("home_score");
+                        int as = obj.getInt("away_score");
+                        // pending = -1 -> δείχνουμε 0
+                        final int homeScore = (hs < 0) ? 0 : hs;
+                        final int awayScore = (as < 0) ? 0 : as;
+
+                        runOnUiThread(() -> {
+                            homeTeamTxt.setText(homeTeam);
+                            awayTeamTxt.setText(awayTeam);
+                            homeScoreInput.setText(String.valueOf(homeScore));
+                            awayScoreInput.setText(String.valueOf(awayScore));
+
+                            Picasso.with(getApplicationContext())
+                                    .load(homeLogo)
+                                    .error(R.mipmap.ic_launcher_round)
+                                    .into(imgHomeLogo);
+                            Picasso.with(getApplicationContext())
+                                    .load(awayLogo)
+                                    .error(R.mipmap.ic_launcher_round)
+                                    .into(imgAwayLogo);
+                        });
+                    } catch (Exception e) { e.printStackTrace(); }
+                }
+            }
+        });
+    }
 
     // +1 with a click, -1 with a long click
     private void setupCounter(int buttonId, String teamType, String eventType) {
@@ -241,7 +284,6 @@ public class ManageMatchActivity extends AppCompatActivity {
         });
     }
 
-
     // SENDING DATA TO THE BACKEND (API CALL)
     private void sendEventToServer(String eventType, String teamType, String value, String playerId) {
         if (selectedMatchId.isEmpty()) return;
@@ -249,7 +291,7 @@ public class ManageMatchActivity extends AppCompatActivity {
         String url = Config.BASE_URL + "insertMatchEvent.php";
         okhttp3.RequestBody formBody = new okhttp3.FormBody.Builder()
                 .add("match_id", selectedMatchId)
-                .add("player_id", playerId)  // <--- ΝΕΟ ΠΕΔΙΟ ΓΙΑ ΤΗ ΒΑΣΗ ΔΕΔΟΜΕΝΩΝ!
+                .add("player_id", playerId)
                 .add("team_type", teamType)
                 .add("event_type", eventType)
                 .add("value", value)
@@ -269,34 +311,6 @@ public class ManageMatchActivity extends AppCompatActivity {
         });
     }
 
-    private void fetchMatches() {
-        String url = Config.BASE_URL + "getMatches.php";
-        okhttp3.Request request = new okhttp3.Request.Builder().url(url).build();
-
-        client.newCall(request).enqueue(new okhttp3.Callback() {
-            @Override
-            public void onFailure(okhttp3.Call call, java.io.IOException e) {}
-
-            @Override
-            public void onResponse(okhttp3.Call call, okhttp3.Response response) throws java.io.IOException {
-                if (response.isSuccessful()) {
-                    String responseData = response.body().string();
-                    try {
-                        org.json.JSONArray jsonArray = new org.json.JSONArray(responseData);
-                        matchList.clear();
-                        matchList.add("--- Επιλέξτε Αγώνα ---");
-
-                        for (int i = 0; i < jsonArray.length(); i++) {
-                            org.json.JSONObject obj = jsonArray.getJSONObject(i);
-                            matchList.add(obj.getString("match_id") + ": " + obj.getString("home_team") + " vs " + obj.getString("away_team"));
-                        }
-                        runOnUiThread(() -> matchAdapter.notifyDataSetChanged());
-                    } catch (Exception e) { e.printStackTrace(); }
-                }
-            }
-        });
-    }
-
     private void fetchPlayers(String matchId) {
         String url = Config.BASE_URL + "getPlayersForAnalyst.php?matchId=" + matchId;
         okhttp3.Request request = new okhttp3.Request.Builder().url(url).build();
@@ -312,24 +326,23 @@ public class ManageMatchActivity extends AppCompatActivity {
                     try {
                         org.json.JSONObject obj = new org.json.JSONObject(responseData);
 
-                        // ΣΩΣΤΗ ΑΝΑΓΝΩΣΗ: Διαβάζουμε τα JSON Arrays όπως τα στέλνει το νέο PHP
                         org.json.JSONArray hp = obj.getJSONArray("home_players");
                         org.json.JSONArray ap = obj.getJSONArray("away_players");
 
-                        // 1. Γεμίζουμε το Spinner των Γηπεδούχων
+                        // 1. Spinner Γηπεδούχων
                         homePlayerList.clear();
                         homePlayerList.add("--- Επιλέξτε Παίκτη ---");
-                        for (int i=0; i<hp.length(); i++) homePlayerList.add(hp.getString(i));
+                        for (int i = 0; i < hp.length(); i++) homePlayerList.add(hp.getString(i));
 
-                        // 2. Γεμίζουμε το Spinner των Φιλοξενούμενων
+                        // 2. Spinner Φιλοξενούμενων
                         awayPlayerList.clear();
                         awayPlayerList.add("--- Επιλέξτε Παίκτη ---");
-                        for (int i=0; i<ap.length(); i++) awayPlayerList.add(ap.getString(i));
+                        for (int i = 0; i < ap.length(); i++) awayPlayerList.add(ap.getString(i));
 
-                        // 3. Γεμίζουμε και την παλιά γενική λίστα (για να δουλεύουν σωστά οι Αλλαγές!)
+                        // 3. Γενική λίστα (για τις Αλλαγές)
                         playerList.clear();
-                        for (int i=0; i<hp.length(); i++) playerList.add(hp.getString(i));
-                        for (int i=0; i<ap.length(); i++) playerList.add(ap.getString(i));
+                        for (int i = 0; i < hp.length(); i++) playerList.add(hp.getString(i));
+                        for (int i = 0; i < ap.length(); i++) playerList.add(ap.getString(i));
 
                         runOnUiThread(() -> {
                             homePlayerAdapter.notifyDataSetChanged();
@@ -372,7 +385,7 @@ public class ManageMatchActivity extends AppCompatActivity {
 
             @Override
             public void onResponse(okhttp3.Call call, okhttp3.Response response) throws java.io.IOException {
-                if(response.isSuccessful()){
+                if (response.isSuccessful()) {
                     runOnUiThread(() -> Toast.makeText(ManageMatchActivity.this, "Η αλλαγή καταγράφηκε!", Toast.LENGTH_LONG).show());
                 }
             }

@@ -3,6 +3,7 @@ package com.example.temp_project;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -16,7 +17,18 @@ import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.ArrayList;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class ChooseLineupsActivity extends AppCompatActivity {
 
@@ -28,10 +40,10 @@ public class ChooseLineupsActivity extends AppCompatActivity {
     private int matchId;
     private MatchPlayersList playersList;
 
-    // ποια ομάδα βλέπουμε τώρα (true = γηπεδούχος)
-    private boolean viewingHome = true;
-
+    private boolean viewingHome = true; // ποια ομάδα βλέπουμε (true = γηπεδούχος)
     private static final int MAX_PLAYERS = 11;
+
+    private final OkHttpClient client = new OkHttpClient();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,8 +76,7 @@ public class ChooseLineupsActivity extends AppCompatActivity {
         btnAwayTeam.setOnClickListener(v -> { viewingHome = false; renderPlayers(); });
         btnSaveLineups.setOnClickListener(v -> trySave());
 
-        // Default: η γηπεδούχος
-        renderPlayers();
+        renderPlayers(); // default: η γηπεδούχος
     }
 
     private ArrayList<LineupPlayer> currentList() {
@@ -104,7 +115,6 @@ public class ChooseLineupsActivity extends AppCompatActivity {
         rowParams.setMargins(0, 6, 0, 0);
         row.setLayoutParams(rowParams);
 
-        // Φωτό παίκτη
         ImageView img = new ImageView(this);
         LinearLayout.LayoutParams imgParams = new LinearLayout.LayoutParams(120, 120);
         imgParams.setMargins(0, 0, 16, 0);
@@ -115,7 +125,6 @@ public class ChooseLineupsActivity extends AppCompatActivity {
                 .into(img);
         row.addView(img);
 
-        // Όνομα + θέση
         LinearLayout textCol = new LinearLayout(this);
         textCol.setOrientation(LinearLayout.VERTICAL);
         textCol.setLayoutParams(new LinearLayout.LayoutParams(
@@ -178,22 +187,75 @@ public class ChooseLineupsActivity extends AppCompatActivity {
         int away = countSelected(playersList.getAwayPlayers());
 
         if (home != MAX_PLAYERS || away != MAX_PLAYERS) {
-            Toast.makeText(this, getString(R.string.lineup_incomplete, home, away),
+            Toast.makeText(this,
+                    "Πρέπει 11 + 11 (τώρα " + home + " + " + away + ")",
                     Toast.LENGTH_LONG).show();
             return;
         }
 
-        ArrayList<Integer> homeIds = new ArrayList<>();
+        // Τα IDs των 22 βασικών σε ένα comma-separated string
+        StringBuilder ids = new StringBuilder();
         for (LineupPlayer p : playersList.getHomePlayers()) {
-            if (p.isSelected()) homeIds.add(p.getPlayerId());
+            if (p.isSelected()) {
+                if (ids.length() > 0) ids.append(",");
+                ids.append(p.getPlayerId());
+            }
         }
-        ArrayList<Integer> awayIds = new ArrayList<>();
         for (LineupPlayer p : playersList.getAwayPlayers()) {
-            if (p.isSelected()) awayIds.add(p.getPlayerId());
+            if (p.isSelected()) {
+                if (ids.length() > 0) ids.append(",");
+                ids.append(p.getPlayerId());
+            }
         }
 
-        // TODO: εδώ θα στείλουμε τις 2 ενδεκάδες στον server για αποθήκευση στο match_lineups
-        Toast.makeText(this, "OK: " + homeIds.size() + " + " + awayIds.size(),
-                Toast.LENGTH_SHORT).show();
+        saveLineupsToServer(ids.toString());
+    }
+
+    private void saveLineupsToServer(String starterIds) {
+        String url = Config.BASE_URL + "saveLineups.php";
+
+        RequestBody formBody = new FormBody.Builder()
+                .add("match_id", String.valueOf(matchId))
+                .add("starter_ids", starterIds)
+                .build();
+
+        Request request = new Request.Builder().url(url).post(formBody).build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                runOnUiThread(() -> Toast.makeText(ChooseLineupsActivity.this,
+                        "Network Error", Toast.LENGTH_SHORT).show());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String body = (response.body() != null) ? response.body().string() : "";
+                boolean ok = false;
+                try {
+                    ok = new JSONObject(body).optBoolean("success", false);
+                } catch (Exception e) {
+                    ok = false;
+                }
+                final boolean success = ok;
+
+                runOnUiThread(() -> {
+                    if (success) {
+                        Toast.makeText(ChooseLineupsActivity.this,
+                                "Οι ενδεκάδες αποθηκεύτηκαν!", Toast.LENGTH_SHORT).show();
+
+                        // Πάμε στη διαχείριση αγώνα με το ΙΔΙΟ MATCH_ID
+                        Intent intent = new Intent(ChooseLineupsActivity.this,
+                                ManageMatchActivity.class);
+                        intent.putExtra("MATCH_ID", matchId);
+                        startActivity(intent);
+                        finish(); // να μη γυρνάει με back στην επιλογή 11άδας
+                    } else {
+                        Toast.makeText(ChooseLineupsActivity.this,
+                                "Αποτυχία αποθήκευσης", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
     }
 }

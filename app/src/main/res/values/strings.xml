@@ -73,7 +73,6 @@
     <string name="title_choose_lineups">Choose Lineups</string>
     <string name="save_lineups">Save</string>
     <string name="lineup_full">You have chosen 11 players</string>
-    <string name="lineup_incomplete">You have to choose 11 + 11 players.</string>
-
+    <string name="lineup_incomplete">You have to choose 11 players for both teams.</string>
 
 </resources>
