@@ -17,21 +17,23 @@
             android:id="@+id/btnHomeTeam"
             android:layout_width="0dp"
             android:layout_height="80dp"
-            android:layout_weight="1"
             android:layout_margin="6dp"
+            android:layout_weight="1"
+            android:background="@color/palette_blue_4"
+            android:contentDescription="Γηπεδούχος"
             android:padding="10dp"
-            android:scaleType="fitCenter"
-            android:contentDescription="Γηπεδούχος" />
+            android:scaleType="fitCenter" />
 
         <ImageButton
             android:id="@+id/btnAwayTeam"
             android:layout_width="0dp"
             android:layout_height="80dp"
-            android:layout_weight="1"
             android:layout_margin="6dp"
+            android:layout_weight="1"
+            android:background="@color/palette_blue_4"
+            android:contentDescription="Φιλοξενούμενη"
             android:padding="10dp"
-            android:scaleType="fitCenter"
-            android:contentDescription="Φιλοξενούμενη" />
+            android:scaleType="fitCenter" />
     </LinearLayout>
 
     <TextView
