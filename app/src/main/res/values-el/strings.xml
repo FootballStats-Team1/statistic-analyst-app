@@ -61,6 +61,12 @@
     <string name="title_match_details">Στατιστικά Αγώνα</string>
 
 
+    <string name="title_choose_lineups">Επιλογή Ενδεκάδων</string>
+    <string name="save_lineups">Αποθήκευση Ενδεκάδων</string>
+    <string name="lineup_full">Έχεις ήδη διαλέξει 11 παίκτες</string>
+    <string name="lineup_incomplete">Πρέπει 11 + 11 (τώρα %1$d + %2$d)</string>
+
+
 
 
 </resources>
