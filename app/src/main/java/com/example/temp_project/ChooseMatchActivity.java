@@ -109,7 +109,7 @@ public class ChooseMatchActivity extends AppCompatActivity {
             if ("live".equalsIgnoreCase(match.getStatus())) {
                 isRoundLive = true;
                 tvScore.setTextColor(android.graphics.Color.RED);
-                tvScore.setText("LIVE\n" + match.getScoreText());
+                tvScore.setText(capitalizeStatus(match.getStatus()) + "\n" + match.getScoreText());
             } else {
                 tvScore.setText(match.getScoreText());
             }
@@ -136,6 +136,7 @@ public class ChooseMatchActivity extends AppCompatActivity {
                     Intent intent;
                     if (hasLineup) {
                         intent = new Intent(ChooseMatchActivity.this, ManageMatchActivity.class);
+                        //intent = new Intent(ChooseMatchActivity.this, ManageTheMatchActivity.class);
                     } else {
                         intent = new Intent(ChooseMatchActivity.this, ChooseLineupsActivity.class);
                     }
@@ -174,5 +175,10 @@ public class ChooseMatchActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         return result[0];
+    }
+
+    private String capitalizeStatus(String status) {
+        if (status == null || status.isEmpty()) return "";
+        return status.substring(0, 1).toUpperCase() + status.substring(1).toLowerCase();
     }
 }

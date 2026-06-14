@@ -169,11 +169,6 @@
             <Button android:id="@+id/btnAwayGoal" android:layout_width="60dp" android:layout_height="wrap_content" android:text="+1" android:backgroundTint="@color/palette_blue_1"/>
         </LinearLayout>
 
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:layout_marginBottom="8dp">
-            <Button android:id="@+id/btnHomeAssist" android:layout_width="60dp" android:layout_height="wrap_content" android:text="+1" android:backgroundTint="@color/palette_blue_4"/>
-            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="ΑΣΙΣΤ" android:textColor="@color/white" android:gravity="center" android:textStyle="bold"/>
-            <Button android:id="@+id/btnAwayAssist" android:layout_width="60dp" android:layout_height="wrap_content" android:text="+1" android:backgroundTint="@color/palette_blue_4"/>
-        </LinearLayout>
 
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:layout_marginBottom="8dp">
             <Button android:id="@+id/btnHomeShotOn" android:layout_width="60dp" android:layout_height="wrap_content" android:text="+1" android:backgroundTint="@color/palette_blue_4"/>
